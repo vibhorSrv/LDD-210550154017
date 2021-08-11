@@ -1,7 +1,9 @@
 obj-m := add.o average.o
 
-KDIR=/home/vibhor/rpi/linux/
-all:
-	make -C $(KDIR) M=$(PWD) modules
+KDIR=/lib/modules/$(shell uname -r)/build #for native
+# KDIR= /home/vibhor/rpi/linux #for cross compile
+
+default:
+	$(MAKE) -C $(KDIR) M=$(PWD) modules
 clean:
-	make -C $(KDIR) M=$(PWD) clean
+	$(MAKE) -C $(KDIR) M=$(PWD) clean

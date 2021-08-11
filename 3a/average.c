@@ -10,7 +10,7 @@ static int b = 3;
 
 static int __init myavginit(void)
 {
-    printk(KERN_ALERT "Avg module Init Sum = %d", (float)myadd(a, b)/2);
+    printk(KERN_ALERT "Avg module Init Sum = %d", myadd(a, b) / 2);
     return 0;
 }
 

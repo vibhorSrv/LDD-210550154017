@@ -1,9 +1,11 @@
 obj-m := module_param.o
 
-KDIR= /home/vibhor/rpi/linux
+KDIR=/lib/modules/$(shell uname -r)/build #for native
+# KDIR= /home/vibhor/rpi/linux #for cross compile
+
 PWD=$(shell pwd)
 
-all:
-	make -C $(KDIR) M=$(PWD) modules
+default:
+	$(MAKE) -C $(KDIR) M=$(PWD) modules
 clean:
-	make -C $(KDIR) M=$(PWD) clean
+	$(MAKE) -C $(KDIR) M=$(PWD) clean
