@@ -11,9 +11,10 @@
 #include "module_ioctl.h"
 
 #define DEV_NAME "my_ioctldev"
+
 #define DEV_MAJ 255
+
 #define DEV_MIN 3
-#define KBUF_LEN 100
 
 #define ERR(...)                                      \
     {                                                 \
@@ -25,11 +26,14 @@
     }
 
 MODULE_LICENSE("GPL");
+
 MODULE_AUTHOR("Vibhor");
+
 MODULE_DESCRIPTION("Character Driver Module for calculator functionality using IOCTL");
 
 /**function prototypes**/
 int CHARDEV_open(struct inode *inode, struct file *file);
+
 int CHARDEV_release(struct inode *inode, struct file *file);
 
 long CHARDEV_ioctl(struct file *__file, unsigned int cmg, unsigned long arg);
@@ -43,48 +47,57 @@ struct file_operations my_device_file_operations =
         .unlocked_ioctl = CHARDEV_ioctl,
 };
 
-struct cdev *my_cdev;
+static struct cdev *my_cdev;
 
 static int num1, num2, res;
+
 static char opr;
 
 /*Module functions definition*/
 
 static int __init MODULE_init(void)
 {
-    int result, MAJ, MIN;
+    int add_device_result, MAJ, MIN;
+
     dev_t my_device;
 
     INFO("MODULE_init() enter");
 
     //make a dev_t statically using MKDEV
     my_device = MKDEV(DEV_MAJ, DEV_MIN);
+
     MAJ = MAJOR(my_device);
+
     MIN = MINOR(my_device);
+
     INFO("MKDEV: /dev/" DEV_NAME " MAJ=%d, MIN=%d", MAJ, MIN);
 
     //register the newly created device with its region in /dev/
-    result = register_chrdev_region(my_device, 1, DEV_NAME);
+    add_device_result = register_chrdev_region(my_device, 1, DEV_NAME);
 
     //if unsuccessful
-    if (result < 0)
+    if (add_device_result < 0)
     {
         ERR("Device could not be created!\n");
+
         return -1;
     }
 
     INFO("Device Registered successfully");
 
     my_cdev = cdev_alloc(); //allocate a cdev structure
+
     my_cdev->ops = &my_device_file_operations;
 
-    result = cdev_add(my_cdev, my_device, 1); //add my_device to cdev
+    add_device_result = cdev_add(my_cdev, my_device, 1); //add my_device to cdev
 
     //if unsuccessful
-    if (result < 0)
+    if (add_device_result < 0)
     {
         ERR("Device could not be added!\n");
+
         unregister_chrdev_region(my_device, 1);
+
         return -1;
     }
     INFO("Added to cdev successfully");
@@ -96,21 +109,25 @@ static int __init MODULE_init(void)
 
 static void __exit MODULE_exit(void)
 {
-    int MAJ, MIN;
-    dev_t my_device = MKDEV(DEV_MAJ, DEV_MIN);
-    INFO("MODULE_exit() enter")
+    dev_t my_device;
 
-    MAJ = MAJOR(my_device);
-    MIN = MINOR(my_device);
-    INFO("MKDEV: my_device MAJ=%d, MIN=%d", MAJ, MIN);
+    INFO("MODULE_exit() enter");
+
+    my_device = MKDEV(DEV_MAJ, DEV_MIN);
+    
+    INFO("MKDEV: my_device MAJ=%d, MIN=%d", MAJOR(my_device), MINOR(my_device));
+
     unregister_chrdev_region(my_device, 1);
+
     cdev_del(my_cdev);
 
     INFO("exited: Device Unregistered successfully, Sayonara");
+
     INFO("MODULE_exit() exit");
 }
 
 module_init(MODULE_init);
+
 module_exit(MODULE_exit);
 
 /*Char device file operation functions definitions*/
@@ -122,12 +139,14 @@ module_exit(MODULE_exit);
 int CHARDEV_open(struct inode *inode, struct file *file)
 {
     INFO("CHARDEV_open(..)");
+
     return 0;
 }
 
 long CHARDEV_ioctl(struct file *__file, unsigned int cmd, unsigned long arg)
 {
     long retval = -1;
+
     INFO("CHARDEV_ioctl(..) in");
 
     switch (cmd)
@@ -176,11 +195,13 @@ long CHARDEV_ioctl(struct file *__file, unsigned int cmd, unsigned long arg)
     }
 ret:
     INFO("CHARDEV_ioctl(..) out");
+
     return retval;
 }
 
 int CHARDEV_release(struct inode *inode, struct file *file)
 {
     INFO("CHARDEV_release(..)");
+
     return 0;
 }

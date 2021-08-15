@@ -27,7 +27,7 @@ int main(int argc, char const *argv[])
 {
     if (argc < 2 || argc > 3)
     {
-        showUsageErrorMessage();
+       return showUsageErrorMessage();
     }
     else
     {
@@ -58,7 +58,8 @@ int main(int argc, char const *argv[])
         }
         else
         {
-            showUsageErrorMessage();
+            close(d_fd);
+            return showUsageErrorMessage();
         }
         close(d_fd);
     }
