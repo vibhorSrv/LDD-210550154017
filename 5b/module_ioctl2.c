@@ -1,5 +1,6 @@
 /**
  * Calculator functionality using char driver ioctl functions
+ * using a struct
  */
 #include <linux/init.h>
 #include <linux/module.h>
@@ -8,13 +9,14 @@
 #include <linux/types.h>
 #include <linux/fs.h>
 #include <linux/uaccess.h>
-#include "module_ioctl.h"
+#include <linux/slab.h>
+#include "module_ioctl2.h"
 
-#define DEV_NAME "my_ioctldev"
+#define DEV_NAME "my_ioctldev2"
 
 #define DEV_MAJ 255
 
-#define DEV_MIN 3
+#define DEV_MIN 4
 
 #define ERR(...)                                      \
     {                                                 \
@@ -49,9 +51,7 @@ struct file_operations my_device_file_operations =
 
 static struct cdev *my_cdev;
 
-static int num1, num2, res;
-
-static char opr;
+static struct oper_container *k_oper_container;
 
 /*Module functions definition*/
 
@@ -60,6 +60,8 @@ static int __init MODULE_init(void)
     int add_device_result, MAJ, MIN;
 
     dev_t my_device;
+
+    k_oper_container = (struct oper_container *)__kmalloc(sizeof(struct oper_container), GFP_KERNEL);
 
     INFO("MODULE_init() enter");
 
@@ -114,7 +116,7 @@ static void __exit MODULE_exit(void)
     INFO("MODULE_exit() enter");
 
     my_device = MKDEV(DEV_MAJ, DEV_MIN);
-    
+
     INFO("MKDEV: my_device MAJ=%d, MIN=%d", MAJOR(my_device), MINOR(my_device));
 
     unregister_chrdev_region(my_device, 1);
@@ -146,44 +148,41 @@ int CHARDEV_open(struct inode *inode, struct file *file)
 long CHARDEV_ioctl(struct file *__file, unsigned int cmd, unsigned long arg)
 {
     long retval = -1;
+    int res;
+    struct oper_container* c;
 
     INFO("CHARDEV_ioctl(..) in");
 
     switch (cmd)
     {
-    case IOCT_NUM1:
-        retval = copy_from_user(&num1, (int *)arg, sizeof(num1));
-        INFO("num1 = %d", num1);
-        break;
-    case IOCT_NUM2:
-        retval = copy_from_user(&num2, (int *)arg, sizeof(num2));
-        INFO("num2 = %d", num2);
-        break;
-    case IOCT_OPR:
-        retval = copy_from_user(&opr, (char *)arg, sizeof(opr));
-        INFO("opr = %c", opr);
+    case IOCT_CALC_PARCEL:
+        c = (struct oper_container *)arg;
+        retval = copy_from_user(k_oper_container, (struct oper_container *)arg, sizeof(struct oper_container));
+
+        INFO("%d  %c  %d", k_oper_container->operand1, k_oper_container->operator, k_oper_container->operand2);
+
         break;
     case IOCT_RES:
-        switch (opr)
+        switch (k_oper_container->operator)
         {
         default:
-            ERR("Arithemetic Operation %c Not Supported Error", opr);
+            ERR("Arithemetic Operation %c Not Supported Error", k_oper_container->operator);
             retval = -1;
             goto ret;
         case '+':
-            res = num1 + num2;
+            res = k_oper_container->operand1 + k_oper_container->operand2;
             break;
         case '-':
-            res = num1 - num2;
+            res = k_oper_container->operand1 - k_oper_container->operand2;
             break;
         case '*':
-            res = num1 * num2;
+            res = k_oper_container->operand1 * k_oper_container->operand2;
             break;
         case '/':
-            if (num2 == 0)
+            if (k_oper_container->operand2 == 0)
                 res = 0;
             else
-                res = num1 / num2;
+                res = k_oper_container->operand1 / k_oper_container->operand2;
             break;
         }
         INFO("res = %d", res);
