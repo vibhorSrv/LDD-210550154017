@@ -56,7 +56,7 @@ static int __init SUB_MOD_init(void)
     my_device = MKDEV(DEV_MAJ, DEV_MIN);
     MAJ = MAJOR(my_device);
     MIN = MINOR(my_device);
-    INFO("MKDEV: /dev/"DEV_NAME" MAJ=%d, MIN=%d", MAJ, MIN);
+    INFO("MKDEV: /dev/" DEV_NAME " MAJ=%d, MIN=%d", MAJ, MIN);
 
     //register the newly created device with its region in /dev/
     result = register_chrdev_region(my_device, 1, DEV_NAME);
@@ -148,6 +148,7 @@ ssize_t SUB_DEV_write(struct file *__file, const char *__ubuf, size_t __nbytes, 
         INFO("%d bytes of data successfully written", bytes_to_write);
         INFO("Message received from User = %s", kbuf);
         kstrtoint(kbuf, 10, &operands[num_idx]);
+        INFO("operands[%d] = %d", num_idx, operands[num_idx]);
         num_idx = (num_idx + 1) % 2;
         retval = bytes_to_write;
     }

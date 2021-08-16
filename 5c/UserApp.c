@@ -1,9 +1,8 @@
 /**
- * Opens our newly created char device /dev/my_ioctldev2
- * for ioctl operations using a struct to pass the arguments
+ * Takes 3 arguments from the user and performs add / subtract / multiply / divide operations based on that
+ * this is done by opening 4 different char devices that implement the functionality in their read write functions
  * 
- * make sure to execute sudo mknod /dev/my_ioctldev2 c 255 4
- * before running this program
+ * 
  */
 #include <sys/types.h>
 #include <fcntl.h>
@@ -13,10 +12,10 @@
 #include <string.h>
 #include <sys/ioctl.h>
 
-#define ADD_DEV_NAME "my_add_dev"
-#define SUB_DEV_NAME "my_sub_dev"
-#define MUL_DEV_NAME "my_mul_dev"
-#define DIV_DEV_NAME "my_div_dev"
+#define ADD_DEV_NAME "my_add_dev" //255 5
+#define SUB_DEV_NAME "my_sub_dev" //255 6
+#define MUL_DEV_NAME "my_mul_dev" //255 7
+#define DIV_DEV_NAME "my_div_dev" //255 8
 
 struct oper_container *u_oper_container;
 static char result[50];
@@ -70,7 +69,7 @@ int main(int argc, char const *argv[])
         {
             write(d_fd, argv[1], strlen(argv[1])); //sending first number to driver
             write(d_fd, argv[3], strlen(argv[3])); //sending second number to driver
-            read(d_fd, result, 50); //reading result from the driver
+            read(d_fd, result, 50);                //reading result from the driver
             printf("Result  = %s\n", result);
             retval = 0;
             printf("closing device!\n");
