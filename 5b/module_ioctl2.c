@@ -149,14 +149,12 @@ long CHARDEV_ioctl(struct file *__file, unsigned int cmd, unsigned long arg)
 {
     long retval = -1;
     int res;
-    struct oper_container* c;
 
     INFO("CHARDEV_ioctl(..) in");
 
     switch (cmd)
     {
     case IOCT_CALC_PARCEL:
-        c = (struct oper_container *)arg;
         retval = copy_from_user(k_oper_container, (struct oper_container *)arg, sizeof(struct oper_container));
 
         INFO("%d  %c  %d", k_oper_container->operand1, k_oper_container->operator, k_oper_container->operand2);
